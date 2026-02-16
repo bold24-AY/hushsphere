@@ -1,6 +1,4 @@
 import UserContext from "./components/AccountContext";
-import useSocketSetup from "./components/Home/useSocketSetup";
-import ToggleColorMode from "./components/ToggleColorMode";
 import Views from "./components/Views";
 import socket from "./socket";
 function App() {
@@ -9,7 +7,6 @@ function App() {
     <>
       <UserContext>
         <Views />
-        <ToggleColorMode />
       </UserContext>
     </>
   );

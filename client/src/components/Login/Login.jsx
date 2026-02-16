@@ -7,7 +7,7 @@ import {
   CircularProgress,
   Flex,
   useColorModeValue,
-  Box,
+  Image,
 } from "@chakra-ui/react";
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
@@ -15,6 +15,8 @@ import * as Yup from "yup";
 import { Form, Formik } from "formik";
 import TextField from "../TextField";
 import { AccountContext } from "../AccountContext";
+import l2 from "../../assets/l2.svg";
+import ToggleColorMode from "../ToggleColorMode";
 
 const Login = () => {
   const { setUser } = useContext(AccountContext);
@@ -88,6 +90,7 @@ const Login = () => {
           align="center"
           px="4"
         >
+          <ToggleColorMode />
           <VStack
             as={Form}
             w="full"
@@ -102,7 +105,7 @@ const Login = () => {
             onSubmit={formik.handleSubmit}
           >
             <VStack spacing="2" align="center" w="full">
-              <Heading size="2xl" color="brand.500" mb="4">HushSphere</Heading>
+              <Image src={l2} alt="HushSphere Logo" maxW="250px" mb="4" borderRadius="md" />
               <Heading size="lg" color={headingColor}>Welcome Back</Heading>
               <Text fontSize="md" color="slate.500">
                 Log in to continue your conversations

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { useColorMode } from "@chakra-ui/color-mode";
 import { Button } from "@chakra-ui/button";

@@ -26,7 +26,12 @@ const useSocketSetup = (setfriendList, setMessages) => {
     });
     socket.on("dm", (message) => {
       console.log("DM Event Fired!", message);
-      setMessages((prevMsg) => [message, ...prevMsg]);
+      setMessages((prevMsg) => [...prevMsg, message]);
+    });
+    socket.on("friend_removed", (removedUsername) => {
+      setfriendList((prevFriends) =>
+        prevFriends.filter(friend => friend.username !== removedUsername)
+      );
     });
     socket.on("connect_error", () => {
       console.log("connection fail");
@@ -38,6 +43,7 @@ const useSocketSetup = (setfriendList, setMessages) => {
       socket.off("friends");
       socket.off("messages");
       socket.off("dm");
+      socket.off("friend_removed");
     };
   }, [setUser, setfriendList]);
 };

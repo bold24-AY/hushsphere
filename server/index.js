@@ -37,6 +37,7 @@ app.use("/auth", authrouter);
 
 io.use(wrap(sessionMiddleware));
 io.use(authorizerUser);
+app.set("io", io); // Make io accessible in controllers
 io.on("connect", (socket) => {
   initializeUser(socket);
 

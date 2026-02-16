@@ -6,6 +6,7 @@ import {
   Text,
   Flex,
   useColorModeValue,
+  Image,
 } from "@chakra-ui/react";
 import * as Yup from "yup";
 import { Form, Formik } from "formik";
@@ -14,6 +15,8 @@ import { useNavigate } from "react-router";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useContext, useState } from "react";
 import { AccountContext } from "../AccountContext";
+import l2 from "../../assets/l2.svg";
+import ToggleColorMode from "../ToggleColorMode";
 
 const Signup = () => {
   const { setUser } = useContext(AccountContext);
@@ -75,6 +78,7 @@ const Signup = () => {
           align="center"
           px="4"
         >
+          <ToggleColorMode />
           <VStack
             as={Form}
             w="full"
@@ -89,7 +93,7 @@ const Signup = () => {
             onSubmit={formik.handleSubmit}
           >
             <VStack spacing="2" align="center" w="full">
-              <Heading size="2xl" color="brand.500" mb="4">HushSphere</Heading>
+              <Image src={l2} alt="HushSphere Logo" maxW="250px" mb="4" borderRadius="md" />
               <Heading size="lg" color={headingColor}>Create Account</Heading>
               <Text fontSize="md" color="slate.500">
                 Join the conversation today

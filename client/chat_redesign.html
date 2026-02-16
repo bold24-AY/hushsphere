@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Hushsphere | Secure Anonymous Chat</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0dc8f2",
+                        secondary: "#64748b",
+                        dark: "#0a0c10",
+                        darker: "#050608",
+                        surface: "#161b22",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        },
+                        glow: {
+                            'from': { boxShadow: '0 0 10px -10px #0dc8f2' },
+                            'to': { boxShadow: '0 0 20px 5px rgba(13, 200, 242, 0.3)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-heavy {
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Gradients & Text */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0dc8f2 0%, #0a84a0 100%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #0dc8f2 0%, #0a84a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Nav & Interactions */
+        .sidebar-link {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-link.active {
+            background: rgba(13, 200, 242, 0.1);
+            color: #0dc8f2;
+            box-shadow: inset 3px 0 0 #0dc8f2;
+        }
+
+        .sidebar-link:hover:not(.active) {
+            transform: translateX(4px);
+        }
+
+        /* Burn Effect Animations */
+        @keyframes burn-disintegrate {
+            0% {
+                transform: scale(1);
+                filter: brightness(1) contrast(1) blur(0);
+                opacity: 1;
+            }
+
+            10% {
+                filter: brightness(1.2) contrast(1.1) blur(1px);
+            }
+
+            30% {
+                filter: brightness(1.5) contrast(1.2) blur(2px) grayscale(0.5);
+                transform: scale(1.02) skewX(2deg);
+            }
+
+            100% {
+                transform: scale(1.1) translateY(-50px) rotate(5deg);
+                filter: brightness(0) blur(20px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes particle-fly {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translate(var(--tw-tx), var(--tw-ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .burning-effect {
+            animation: burn-disintegrate 1.8s forwards ease-in;
+            pointer-events: none;
+        }
+
+        .ember-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444, 0 0 20px #f97316;
+            border-radius: 50%;
+            z-index: 100;
+            pointer-events: none;
+            animation: particle-fly 1.2s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Message Bubbles */
+        .message-bubble {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Loader */
+        .ping-ring {
+            position: absolute;
+        }
+
+        .ping-ring::before,
+        .ping-ring::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid #0dc8f2;
+            opacity: 0;
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .ping-ring::after {
+            animation-delay: 1s;
+        }
+
+        @keyframes ping {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-slate-300 font-sans h-screen overflow-hidden flex selection:bg-primary/30">
+
+    <!-- Background Ambient Effects -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[150px] rounded-full mix-blend-screen opacity-20 animate-pulse-slow">
+        </div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 blur-[150px] rounded-full mix-blend-screen opacity-15 animate-pulse-slow"
+            style="animation-delay: 1.5s;"></div>
+    </div>
+
+    <!-- MAIN WRAPPER FOR BURN EFFECT -->
+    <div id="app-container" class="flex w-full h-full relative z-10">
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-20 glass-heavy flex flex-col items-center py-8 z-30 transition-all duration-300 ease-in-out">
+            <div class="mb-10 animate-float cursor-pointer">
+                <div
+                    class="size-12 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-[0_0_20px_rgba(13,200,242,0.4)] group">
+                    <span
+                        class="material-symbols-outlined text-white text-2xl group-hover:rotate-12 transition-transform duration-500">shield_lock</span>
+                </div>
+            </div>
+
+            <nav class="flex-1 flex flex-col gap-6 w-full px-3">
+                <a href="#"
+                    class="sidebar-link w-full aspect-square flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/5 group relative"
+                    title="Dashboard">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+                </a>
+                <a href="#"
+                    class="sidebar-link active w-full aspect-square flex items-center justify-center rounded-xl relative"
+                    title="Chats">
+                    <span class="material-symbols-outlined">chat_bubble</span>
+                </a>
+                <a href="#"
+                    class="sidebar-link w-full aspect-square flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/5 group"
+                    title="Contacts">
+                    <span class="material-symbols-outlined group-hover:scale-110 transition-transform">group</span>
+                </a>
+                <a href="#"
+                    class="sidebar-link w-full aspect-square flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/5 group"
+                    title="Files">
+                    <span
+                        class="material-symbols-outlined group-hover:scale-110 transition-transform">folder_shared</span>
+                </a>
+            </nav>
+
+            <div class="mt-auto flex flex-col gap-5 w-full px-3">
+                <button
+                    class="w-full aspect-square flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors group">
+                    <span
+                        class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-500">settings</span>
+                </button>
+                <div class="relative group cursor-pointer mb-2">
+                    <div
+                        class="absolute inset-0 bg-primary/50 blur opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=User&background=161b22&color=0dc8f2&bold=true" alt="User"
+                        class="size-10 rounded-full border-2 border-surface relative z-10">
+                    <span
+                        class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-surface rounded-full z-20"></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Chat List Sidebar -->
+        <aside class="w-80 glass flex flex-col z-20 relative hidden md:flex border-r border-white/5">
+            <div class="p-6 pb-2">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white tracking-tight">Messages</h2>
+                    <button
+                        class="size-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors text-slate-400 hover:text-primary">
+                        <span class="material-symbols-outlined text-lg">edit_square</span>
+                    </button>
+                </div>
+
+                <div class="relative group mb-4">
+                    <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors text-xl">search</span>
+                    <input type="text" placeholder="Search encrypted chats..."
+                        class="w-full glass-input rounded-xl py-3 pl-10 pr-4 text-sm text-slate-200 placeholder:text-slate-600 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner outline-none">
+                </div>
+
+                <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+                    <button
+                        class="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20 whitespace-nowrap hover:bg-primary/20 transition-colors">All</button>
+                    <button
+                        class="px-4 py-1.5 rounded-full bg-white/5 text-slate-400 text-xs font-medium border border-white/5 whitespace-nowrap hover:bg-white/10 hover:text-slate-200 transition-colors">Unread</button>
+                    <button
+                        class="px-4 py-1.5 rounded-full bg-white/5 text-slate-400 text-xs font-medium border border-white/5 whitespace-nowrap hover:bg-white/10 hover:text-slate-200 transition-colors">Archived</button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-3 space-y-2 pb-4">
+                <!-- Active Chat Item -->
+                <div
+                    class="group p-3 rounded-2xl bg-white/5 border border-white/5 cursor-pointer relative overflow-hidden transition-all hover:border-white/10 hover:bg-white/10">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-2xl shadow-[0_0_10px_#0dc8f2]">
+                    </div>
+                    <div class="flex gap-3 relative z-10">
+                        <div class="relative">
+                            <div
+                                class="size-12 rounded-full bg-gradient-to-br from-slate-700 to-surface flex items-center justify-center text-white font-bold border border-white/10">
+                                A8
+                            </div>
+                            <span
+                                class="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-surface rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h3 class="font-semibold text-white truncate">Anon-8832</h3>
+                                <span class="text-[11px] text-primary font-medium">12:45 PM</span>
+                            </div>
+                            <p class="text-xs text-slate-300 truncate font-medium">The encrypted keys are ready...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Item -->
+                <div
+                    class="group p-3 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all">
+                    <div class="flex gap-3">
+                        <div class="relative">
+                            <div
+                                class="size-12 rounded-full bg-surface flex items-center justify-center text-slate-400 border border-white/5 group-hover:border-white/20 transition-colors">
+                                <span class="material-symbols-outlined">face_3</span>
+                            </div>
+                            <span
+                                class="absolute bottom-0 right-0 size-3.5 bg-slate-500 border-2 border-surface rounded-full"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h3
+                                    class="font-medium text-slate-200 truncate group-hover:text-white transition-colors">
+                                    Cipher_X</h3>
+                                <span class="text-[11px] text-slate-500">Yesterday</span>
+                            </div>
+                            <p class="text-xs text-slate-500 truncate group-hover:text-slate-400 transition-colors">
+                                Project nebula launch initiated.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Chat Item -->
+                <div
+                    class="group p-3 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 cursor-pointer transition-all">
+                    <div class="flex gap-3">
+                        <div class="relative">
+                            <div
+                                class="size-12 rounded-full bg-surface flex items-center justify-center text-slate-400 border border-white/5 group-hover:border-white/20 transition-colors">
+                                <span class="material-symbols-outlined">rocket_launch</span>
+                            </div>
+                            <span
+                                class="absolute bottom-0 right-0 size-3.5 bg-orange-500 border-2 border-surface rounded-full"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h3
+                                    class="font-medium text-slate-200 truncate group-hover:text-white transition-colors">
+                                    Team Alpha</h3>
+                                <span class="text-[11px] text-slate-500">Oct 24</span>
+                            </div>
+                            <p class="text-xs text-slate-500 truncate group-hover:text-slate-400 transition-colors">
+                                Meeting rescheduled to 1400.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 flex flex-col relative z-0 h-full overflow-hidden bg-dark/30 backdrop-blur-sm">
+            <!-- Chat Header -->
+            <header
+                class="h-20 px-8 flex items-center justify-between border-b border-white/5 bg-dark/50 backdrop-blur-md z-10">
+                <div class="flex items-center gap-4">
+                    <div class="relative cursor-pointer group">
+                        <div
+                            class="size-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(13,200,242,0.3)] group-hover:shadow-[0_0_20px_rgba(13,200,242,0.5)] transition-shadow">
+                            A8
+                        </div>
+                        <span
+                            class="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 border-2 border-dark rounded-full"></span>
+                    </div>
+                    <div>
+                        <h1 class="text-white font-bold text-lg leading-tight flex items-center gap-2">
+                            Anon-8832
+                            <span
+                                class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold border border-primary/20 tracking-wider">E2EE</span>
+                        </h1>
+                        <p class="text-xs text-green-400 flex items-center gap-1.5 font-medium">
+                            <span class="size-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                            Secure Connection Established
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button
+                        class="size-10 rounded-full glass hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:scale-105 active:scale-95"
+                        title="Call">
+                        <span class="material-symbols-outlined">call</span>
+                    </button>
+                    <button
+                        class="size-10 rounded-full glass hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:scale-105 active:scale-95"
+                        title="Video">
+                        <span class="material-symbols-outlined">videocam</span>
+                    </button>
+                    <div class="w-px h-8 bg-white/10 mx-1"></div>
+                    <button id="sidebar-toggle"
+                        class="size-10 rounded-full glass hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all hover:scale-105 active:scale-95 xl:hidden">
+                        <span class="material-symbols-outlined">info</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Messages Area -->
+            <div class="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth" id="chat-messages">
+
+                <!-- Date Divider -->
+                <div class="flex items-center justify-center py-4 opacity-80">
+                    <div
+                        class="px-4 py-1.5 rounded-full bg-white/5 border border-white/5 text-[11px] font-bold text-slate-500 uppercase tracking-widest backdrop-blur-sm">
+                        Today</div>
+                </div>
+
+                <!-- Receiver Message -->
+                <div class="flex gap-4 max-w-[80%] group">
+                    <div
+                        class="size-8 rounded-full bg-surface border border-white/5 flex items-center justify-center flex-shrink-0 mt-auto">
+                        <span class="text-xs font-bold text-slate-400">A8</span>
+                    </div>
+                    <div class="space-y-1">
+                        <div
+                            class="message-bubble p-4 rounded-2xl rounded-bl-none bg-surface border border-white/5 text-slate-200 shadow-sm leading-relaxed relative">
+                            <p class="text-sm">Hello. I have verified the hash for the latest build. The security
+                                protocols are holding up nicely against the current scan.</p>
+                        </div>
+                        <span
+                            class="text-[10px] text-slate-600 font-mono ml-1 opacity-0 group-hover:opacity-100 transition-opacity block">12:42</span>
+                    </div>
+                </div>
+
+                <!-- Sender Message -->
+                <div class="flex flex-row-reverse gap-4 max-w-[80%] ml-auto group">
+                    <div
+                        class="size-8 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 mt-auto shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined text-white text-sm">person</span>
+                    </div>
+                    <div class="space-y-1 text-right">
+                        <div
+                            class="message-bubble p-4 rounded-2xl rounded-br-none bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 text-white shadow-lg relative overflow-hidden group-hover:border-primary/30 text-left">
+                            <div
+                                class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            </div>
+                            <p class="text-sm leading-relaxed">Excellent. I'll initiate the key rotation now. Make sure
+                                your local vault is synced before proceeding with the handshake.</p>
+                        </div>
+                        <div
+                            class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity mt-1 mr-1">
+                            <span class="text-[10px] text-slate-600 font-mono">12:45</span>
+                            <span class="material-symbols-outlined text-[12px] text-primary"
+                                title="Read">done_all</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Message -->
+                <div class="flex justify-center my-6">
+                    <div
+                        class="flex items-center gap-2 px-4 py-2 bg-yellow-500/5 border border-yellow-500/10 rounded-lg text-yellow-500/80 text-xs shadow-[0_0_15px_rgba(234,179,8,0.05)]">
+                        <span class="material-symbols-outlined text-sm">lock_clock</span>
+                        <span>Session encryption key rotated automatically.</span>
+                    </div>
+                </div>
+
+                <!-- Receiver Message 2 -->
+                <div class="flex gap-4 max-w-[80%] group">
+                    <div
+                        class="size-8 rounded-full bg-surface border border-white/5 flex items-center justify-center flex-shrink-0 mt-auto">
+                        <span class="text-xs font-bold text-slate-400">A8</span>
+                    </div>
+                    <div class="space-y-1">
+                        <div
+                            class="message-bubble p-4 rounded-2xl rounded-bl-none bg-surface border border-white/5 text-slate-200 shadow-sm leading-relaxed relative">
+                            <div
+                                class="flex items-center gap-3 mb-3 p-2 bg-black/20 rounded-lg border border-white/5 hover:bg-black/30 transition-colors cursor-pointer group/file">
+                                <div
+                                    class="size-9 bg-red-500/10 rounded flex items-center justify-center text-red-400 group-hover/file:bg-red-500/20 transition-colors">
+                                    <span class="material-symbols-outlined text-lg">picture_as_pdf</span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-bold text-slate-200 truncate">security_audit_v2.pdf</div>
+                                    <div class="text-[10px] text-slate-500">2.4 MB • PDF</div>
+                                </div>
+                                <button
+                                    class="size-7 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-lg">download</span>
+                                </button>
+                            </div>
+                            <p class="text-sm">Understood. Awaiting final confirmation. Also sending the specific audit
+                                logs you requested earlier.</p>
+                        </div>
+                        <span
+                            class="text-[10px] text-slate-600 font-mono ml-1 opacity-0 group-hover:opacity-100 transition-opacity block">12:47</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-6 bg-gradient-to-t from-dark/90 to-transparent">
+                <div
+                    class="max-w-4xl mx-auto glass p-2 rounded-[2rem] flex items-center gap-2 border border-white/10 shadow-2xl relative transition-all focus-within:border-primary/50 focus-within:shadow-[0_0_20px_rgba(13,200,242,0.15)]">
+                    <button
+                        class="p-3 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center">
+                        <span class="material-symbols-outlined">add_circle</span>
+                    </button>
+
+                    <input type="text" placeholder="Type an encrypted message..."
+                        class="flex-1 bg-transparent border-none focus:ring-0 text-sm placeholder:text-slate-500 text-white min-w-0 h-full">
+
+                    <div class="flex items-center gap-1 pr-1">
+                        <button
+                            class="p-3 rounded-full text-slate-400 hover:text-yellow-400 hover:bg-white/5 transition-all active:scale-95 group flex items-center justify-center">
+                            <span
+                                class="material-symbols-outlined group-hover:scale-110 transition-transform">mood</span>
+                        </button>
+                        <button
+                            class="p-3 rounded-full text-slate-400 hover:text-primary hover:bg-white/5 transition-all active:scale-95 flex items-center justify-center">
+                            <span class="material-symbols-outlined">mic</span>
+                        </button>
+                        <button
+                            class="size-10 rounded-full bg-primary hover:bg-primary/90 text-dark flex items-center justify-center shadow-lg shadow-primary/25 transition-all hover:scale-105 active:scale-95 ml-2 hover:shadow-primary/40">
+                            <span class="material-symbols-outlined fill-1">send</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <p
+                        class="text-[10px] text-slate-600 flex items-center justify-center gap-1.5 opacity-70 hover:opacity-100 transition-opacity cursor-help">
+                        <span class="material-symbols-outlined text-xs">lock</span>
+                        End-to-end encrypted
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Info -->
+        <aside id="info-sidebar"
+            class="w-80 glass border-l border-white/5 hidden xl:flex flex-col z-20 px-6 py-6 overflow-y-auto">
+            <div class="text-center mb-8 relative">
+                <div
+                    class="size-24 rounded-full p-1 bg-gradient-to-br from-white/10 to-transparent mx-auto mb-4 border border-white/10 relative group cursor-pointer">
+                    <div class="w-full h-full rounded-full bg-surface grid place-items-center relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        </div>
+                        <span class="text-3xl font-bold text-slate-500">A8</span>
+                        <img src="https://ui-avatars.com/api/?name=A+8&background=161b22&color=64748b" alt=""
+                            class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay">
+                    </div>
+                    <span
+                        class="absolute bottom-1 right-1 size-5 bg-green-500 border-4 border-dark rounded-full z-20 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-1">Anon-8832</h2>
+                <p class="text-xs text-slate-400 font-mono bg-white/5 inline-block px-2 py-1 rounded">@anonymous_ghost
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Encryption Status -->
+                <div
+                    class="p-4 rounded-xl bg-green-500/5 border border-green-500/20 relative overflow-hidden group hover:bg-green-500/10 transition-colors">
+                    <h3 class="text-xs font-bold text-green-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">enhanced_encryption</span>
+                        Encrypted
+                    </h3>
+                    <div
+                        class="flex items-center justify-between text-xs text-slate-400 font-mono bg-black/20 p-2 rounded lg border border-white/5">
+                        <span class="truncate">RSA-4096:8832...</span>
+                        <button class="text-primary hover:text-white transition-colors" title="Copy Key">
+                            <span class="material-symbols-outlined text-xs">content_copy</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Media & Files -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Shared Files</h3>
+                        <a href="#" class="text-xs text-primary hover:text-white transition-colors">View All</a>
+                    </div>
+                    <div class="space-y-3">
+                        <div
+                            class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                            <div
+                                class="size-10 rounded bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition-colors ring-1 ring-inset ring-indigo-500/20">
+                                <span class="material-symbols-outlined">image</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs font-medium text-slate-300 truncate">screenshot_err...png</div>
+                                <div class="text-[10px] text-slate-500">2 mins ago</div>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                            <div
+                                class="size-10 rounded bg-red-500/10 flex items-center justify-center text-red-400 group-hover:bg-red-500/20 transition-colors ring-1 ring-inset ring-red-500/20">
+                                <span class="material-symbols-outlined">description</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs font-medium text-slate-300 truncate">security_audit.pdf</div>
+                                <div class="text-[10px] text-slate-500">Yesterday</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="space-y-1">
+                    <button
+                        class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-colors text-xs font-medium group">
+                        <span>Search in Conversation</span>
+                        <span
+                            class="material-symbols-outlined text-slate-500 group-hover:text-white transition-colors">search</span>
+                    </button>
+                    <button
+                        class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-colors text-xs font-medium group">
+                        <span>Notification Settings</span>
+                        <span
+                            class="material-symbols-outlined text-slate-500 group-hover:text-white transition-colors">notifications</span>
+                    </button>
+                    <button
+                        class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 text-slate-300 transition-colors text-xs font-medium group text-red-400 hover:text-red-300">
+                        <span>Block User</span>
+                        <span
+                            class="material-symbols-outlined text-red-500/50 group-hover:text-red-400 transition-colors">block</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6">
+                <!-- Burn Button -->
+                <button onclick="triggerBurnEffect()"
+                    class="w-full py-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all group overflow-hidden relative shadow-lg hover:shadow-red-500/20 active:scale-95">
+                    <span
+                        class="absolute inset-0 bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    <span class="relative flex items-center gap-2">
+                        <span
+                            class="material-symbols-outlined text-lg group-hover:animate-bounce">local_fire_department</span>
+                        Burn Conversation
+                    </span>
+                    <div
+                        class="absolute inset-0 border border-red-500/50 rounded-xl opacity-0 group-hover:opacity-100 scale-105 transition-all duration-500">
+                    </div>
+                </button>
+                <p class="text-[10px] text-center text-slate-500 mt-3 leading-relaxed opacity-60">
+                    Permanently deletes all messages/keys.
+                </p>
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        function triggerBurnEffect() {
+            const container = document.getElementById('app-container');
+            const mainChat = document.querySelector('main');
+            const sidebars = document.querySelectorAll('aside');
+
+            // Add the burning class to main elements
+            container.classList.add('burning-effect');
+
+            // Create particles
+            const particleCount = 200;
+            for (let i = 0; i < particleCount; i++) {
+                createParticle();
+            }
+
+            // Continuous particle generation for a short while
+            const interval = setInterval(() => {
+                for (let i = 0; i < 10; i++) createParticle();
+            }, 50);
+
+            setTimeout(() => clearInterval(interval), 1000);
+
+            function createParticle() {
+                const ember = document.createElement('div');
+                ember.className = 'ember-particle';
+
+                // Random start position
+                const startX = Math.random() * window.innerWidth;
+                const startY = Math.random() * window.innerHeight;
+
+                // Random flight direction (upwards and chaotic)
+                const tx = (Math.random() - 0.5) * 600;
+                const ty = -Math.random() * 800 - 100;
+
+                ember.style.left = startX + 'px';
+                ember.style.top = startY + 'px';
+                ember.style.setProperty('--tw-tx', tx + 'px');
+                ember.style.setProperty('--tw-ty', ty + 'px');
+
+                // Random size and color
+                const size = Math.random() * 4 + 2;
+                ember.style.width = size + 'px';
+                ember.style.height = size + 'px';
+
+                // Varing colors between red, orange, yellow
+                const colors = ['#ef4444', '#f97316', '#eab308'];
+                ember.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                document.body.appendChild(ember);
+
+                // Cleanup
+                setTimeout(() => ember.remove(), 1200);
+            }
+
+            // Final state after animation
+            setTimeout(() => {
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-screen bg-black text-red-500 font-mono z-50 overflow-hidden relative">
+                        <div class="absolute inset-0 bg-red-900/10 animate-pulse"></div>
+                        <span class="material-symbols-outlined text-6xl mb-4 text-red-600 animate-bounce">skull</span>
+                        <div class="text-2xl tracking-[0.5em] font-bold animate-pulse text-center">SESSION TERMINATED</div>
+                        <div class="text-xs text-red-700 mt-2 tracking-widest">DATA PURGED • KEYS DESTROYED</div>
+                        <button onclick="location.reload()" class="mt-8 px-6 py-2 border border-red-900/50 text-red-800 hover:bg-red-900/20 hover:text-red-500 rounded transition-all uppercase text-xs tracking-widest">Restart System</button>
+                    </div>
+                `;
+            }, 1600);
+        }
+
+        // Toggle Sidebar for mobile
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const infoSidebar = document.getElementById('info-sidebar');
+
+        if (toggleBtn && infoSidebar) {
+            toggleBtn.addEventListener('click', () => {
+                infoSidebar.classList.toggle('hidden');
+                infoSidebar.classList.toggle('absolute');
+                infoSidebar.classList.toggle('right-0');
+                infoSidebar.classList.toggle('h-full');
+                infoSidebar.classList.toggle('top-0');
+                infoSidebar.classList.toggle('border-l-0');
+            });
+        }
+    </script>
+</body>
+
+</html>

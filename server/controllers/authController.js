@@ -66,3 +66,53 @@ module.exports.attemptRegister = async (req, res) => {
     res.json({ loggedIn: false, status: "Username taken" });
   }
 };
+
+module.exports.deleteAccount = async (req, res) => {
+  if (!req.session.user || !req.session.user.userid) {
+    return res.json({ status: false, message: "Not authenticated" });
+  }
+
+  const userId = req.session.user.userid;
+  const username = req.session.user.username;
+
+  try {
+    // 1. Get all friends to notify them
+    const friendsQuery = await pool.query(
+      "SELECT user_uid FROM friends WHERE friend_uid = $1",
+      [userId]
+    );
+    const friendUserIds = friendsQuery.rows.map(row => row.user_uid);
+
+    // 2. Delete all messages where the user is sender or receiver
+    await pool.query(
+      "DELETE FROM messages WHERE from_uid = $1 OR to_uid = $1",
+      [userId]
+    );
+
+    // 3. Delete from friends table (both directions)
+    await pool.query(
+      "DELETE FROM friends WHERE user_uid = $1 OR friend_uid = $1",
+      [userId]
+    );
+
+    // 4. Delete the user from the users table
+    await pool.query("DELETE FROM users WHERE userid = $1", [userId]);
+
+    // 5. Notify friends that this user is gone
+    const io = req.app.get("io");
+    if (io && friendUserIds.length > 0) {
+      // Emit to each friend's room (which uses their userid)
+      friendUserIds.forEach(friendId => {
+        io.to(friendId).emit("friend_removed", username);
+      });
+    }
+
+    // 6. Destroy session
+    req.session.destroy();
+
+    res.json({ status: true, message: "Account burnt successfully" });
+  } catch (err) {
+    console.error("Burn account error:", err);
+    res.json({ status: false, message: "Failed to burn account: " + err.message });
+  }
+};
