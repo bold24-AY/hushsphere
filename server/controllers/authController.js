@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 
 module.exports.handleLogin = (req, res) => {
   if (req.session.user && req.session.user.username) {
-    res.json({ loggedIn: true, username: req.session.user.username });
+    res.json({ loggedIn: true, username: req.session.user.username, userid: req.session.user.userid });
   } else {
     res.json({ loggedIn: false });
   }
@@ -29,7 +29,7 @@ module.exports.attemptLogin = async (req, res) => {
           userid: potentialLogin.rows[0].userid,
         };
 
-        res.json({ loggedIn: true, username: req.body.username });
+        res.json({ loggedIn: true, username: req.body.username, userid: potentialLogin.rows[0].userid });
       } else {
         res.json({ loggedIn: false, status: "Wrong username or password!" });
       }
@@ -61,7 +61,7 @@ module.exports.attemptRegister = async (req, res) => {
       userid: newUserQuery.rows[0].userid,
     };
 
-    res.json({ loggedIn: true, username: req.body.username });
+    res.json({ loggedIn: true, username: req.body.username, userid: newUserQuery.rows[0].userid });
   } else {
     res.json({ loggedIn: false, status: "Username taken" });
   }

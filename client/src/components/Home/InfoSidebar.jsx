@@ -5,8 +5,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const InfoSidebar = () => {
+const InfoSidebar = ({ user }) => {
     const navigate = useNavigate();
+
+    const username = user?.username || "Guest";
 
     const handleBurn = async () => {
         if (window.confirm("ARE YOU SURE? This will permanently delete your account and ALL message history for everyone you've talked to. This action cannot be undone.")) {
@@ -55,12 +57,12 @@ const InfoSidebar = () => {
             <div className="text-center mb-8 relative">
                 <div className="size-24 rounded-full p-1 bg-gradient-to-br from-white/10 to-transparent mx-auto mb-4 border border-white/10 relative group cursor-pointer">
                     <div className="w-full h-full rounded-full bg-surface grid place-items-center relative overflow-hidden">
-                        <span className="text-3xl font-bold text-slate-500">ME</span>
-                        <img src={`https://ui-avatars.com/api/?name=Me&background=161b22&color=64748b`} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+                        <span className="text-3xl font-bold text-slate-500">{username[0]?.toUpperCase()}</span>
+                        <img src={`https://ui-avatars.com/api/?name=${username}&background=161b22&color=64748b`} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
                     </div>
                     <span className="absolute bottom-1 right-1 size-5 bg-green-500 border-4 border-dark rounded-full z-20 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
                 </div>
-                <h2 className="text-xl font-bold text-white mb-1">My Account</h2>
+                <h2 className="text-xl font-bold text-white mb-1">{username}</h2>
             </div>
 
             <div className="space-y-6">

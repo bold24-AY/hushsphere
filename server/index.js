@@ -19,7 +19,7 @@ const io = new Server(server, {
   cors: corsConfig,
 });
 const {
-  authorizerUser,
+  authorizeUser,
   initializeUser,
   addFriend,
   onDisconnect,
@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authrouter);
 
 io.use(wrap(sessionMiddleware));
-io.use(authorizerUser);
+io.use(authorizeUser);
 app.set("io", io); // Make io accessible in controllers
 io.on("connect", (socket) => {
   initializeUser(socket);

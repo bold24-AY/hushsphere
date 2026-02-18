@@ -19,6 +19,7 @@ const directMessages = async (socket, message) => {
     [message.from, message.to, message.content]
   );
 
+  message.from_username = socket.user.username; // Add this for client-side "new chat" handling
   socket.to(message.to).emit("dm", message);
 };
 

@@ -25,8 +25,22 @@ const useSocketSetup = (setfriendList, setMessages) => {
       setMessages(messages);
     });
     socket.on("dm", (message) => {
-      console.log("DM Event Fired!", message);
+      // console.log("DM Event Fired!", message);
       setMessages((prevMsg) => [...prevMsg, message]);
+
+      // If the sender is not in our friend list, add them temporarily so we can chat
+      setfriendList((prevFriends) => {
+        const isKnown = prevFriends.some(f => f.userid === message.from);
+        if (!isKnown && message.from && message.from_username) {
+          return [...prevFriends, {
+            userid: message.from,
+            username: message.from_username,
+            connected: true, // If they sent a message, they are likely online
+            isFriend: false
+          }];
+        }
+        return prevFriends;
+      });
     });
     socket.on("friend_removed", (removedUsername) => {
       setfriendList((prevFriends) =>
@@ -45,7 +59,7 @@ const useSocketSetup = (setfriendList, setMessages) => {
       socket.off("dm");
       socket.off("friend_removed");
     };
-  }, [setUser, setfriendList]);
+  }, [setUser, setfriendList, setMessages]);
 };
 
 export default useSocketSetup;

@@ -1,4 +1,5 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useContext } from "react";
+import { AccountContext } from "../AccountContext";
 import SideBar from "./SideBar";
 import Chat from "./Chat";
 import useSocketSetup from "./useSocketSetup";
@@ -11,7 +12,10 @@ import { useColorModeValue } from "@chakra-ui/system";
 export const FriendContext = createContext();
 export const MessagesContext = createContext();
 
+
+
 const Home = () => {
+  const { user } = useContext(AccountContext);
   const [friendList, setfriendList] = useState([]);
   const [messages, setMessages] = useState([]);
   const [friendindex, setFriendIndex] = useState(0);
@@ -58,7 +62,7 @@ const Home = () => {
           </MessagesContext.Provider>
         </main>
 
-        <InfoSidebar />
+        <InfoSidebar user={user} />
 
       </div>
     </FriendContext.Provider>

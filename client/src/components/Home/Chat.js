@@ -1,16 +1,18 @@
 import React, { useContext, useEffect, useRef } from "react";
 import ChatBox from "./ChatBox";
 import { MessagesContext } from "./Home";
+import { AccountContext } from "../AccountContext";
 import { useColorModeValue } from "@chakra-ui/react";
 
 const Chat = ({ friend }) => {
   const { messages } = useContext(MessagesContext);
+  const { user } = useContext(AccountContext);
   const bottomDiv = useRef(null);
 
   const headerBg = useColorModeValue("bg-white/80 border-b border-gray-200", "glass");
   const textColor = useColorModeValue("text-gray-800", "text-white");
   const iconColor = useColorModeValue("text-gray-500 hover:text-gray-800", "text-slate-400 hover:text-white");
-  const receivedBubble = useColorModeValue("bg-gray-100 text-gray-800 border border-gray-200", "bg-white/5 text-slate-200 border border-white/10");
+
 
   // Hoisted hooks for empty state
   const emptyIconBg = useColorModeValue("bg-gray-100", "bg-white/5");
@@ -79,28 +81,36 @@ const Chat = ({ friend }) => {
         {messages
           .filter(msg => msg.to === friend.userid || msg.from === friend.userid)
           .map((message, idx) => {
-            const isMe = message.from === null;
+            const isMe = message.from === user.userid || message.from === null;
             return (
-              <div key={idx} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[70%] group relative ${isMe ? "" : "flex gap-3"}`}>
+              <div key={idx} className={`flex ${isMe ? "justify-end" : "justify-start"} mb-4`}>
+                <div className={`max-w-[70%] group relative flex ${isMe ? "flex-row-reverse" : "flex-row"} items-end gap-2`}>
+                  {/* Avatar for valid sender */}
                   {!isMe && (
-                    <div className={`size-8 rounded-full border flex items-center justify-center self-end mb-1 ${msgAvatarBg}`}>
-                      <span className="material-symbols-outlined text-xs text-slate-500">person</span>
+                    <div className={`size-8 rounded-full border-2 border-transparent flex items-center justify-center mb-1 overflow-hidden shrink-0 ${msgAvatarBg}`}>
+                      {friend.username ? (
+                        <img src={`https://ui-avatars.com/api/?name=${friend.username}&background=random&color=fff`} alt={friend.username} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="material-symbols-outlined text-xs text-slate-500">person</span>
+                      )}
                     </div>
                   )}
-                  <div>
-                    {!isMe && <span className="text-[10px] text-slate-500 ml-1 mb-1 block">{friend.username}</span>}
-                    <div className={`
-                                        p-4 rounded-3xl relative message-bubble backdrop-blur-sm
-                                        ${isMe
-                        ? "bg-primary text-dark rounded-br-none shadow-[0_0_15px_rgba(13,200,242,0.2)]"
-                        : `${receivedBubble} rounded-bl-none`}
-                                    `}>
-                      <p className="text-sm leading-relaxed font-medium">{message.content}</p>
+
+                  {/* Message Bubble */}
+                  <div className={`
+                    relative px-4 py-2 rounded-2xl shadow-sm
+                    ${isMe
+                      ? "bg-[#005c4b] text-[#e9edef] rounded-tr-none" // WhatsApp-like green for sender
+                      : "bg-[#202c33] text-[#e9edef] rounded-tl-none"} // WhatsApp-like dark for receiver
+                  `}>
+                    {!isMe && <span className="text-[10px] text-[#8696a0] font-bold mb-1 block">{friend.username}</span>}
+
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.content}</p>
+
+                    <div className={`text-[10px] mt-1 flex items-center gap-1 ${isMe ? "justify-end text-[#8696a0]" : "text-[#8696a0]"}`}>
+                      <span>12:42 PM</span>
+                      {isMe && <span className="material-symbols-outlined text-[14px] text-[#53bdeb]">done_all</span>}
                     </div>
-                    <span className={`text-[10px] text-slate-500 mt-1 block ${isMe ? "text-right mr-1" : "ml-1"}`}>
-                      12:42 PM
-                    </span>
                   </div>
                 </div>
               </div>
